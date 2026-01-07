@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.cluster import AgglomerativeClustering
@@ -14,9 +13,11 @@ y_true = df.iloc[:, 0].str.split("_").str[0].values
 # Extract landmark feature data
 X = df.iloc[:, 1:].values
 
+# Scale features
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
+# Use best found K value for agglomerative clustering
 k = 19
 
 agg = AgglomerativeClustering(
@@ -36,6 +37,7 @@ confusion_table = pd.crosstab(
     colnames=["True Label"]
 )
 
+# Plot confusion table normalized by cluster to see which clusters contain instances from which labels
 confusion_norm = confusion_table.div(confusion_table.sum(axis=1), axis=0)
 
 plt.figure(figsize=(12, 6))
@@ -49,6 +51,7 @@ plt.yticks(range(len(confusion_norm.index)), confusion_norm.index)
 plt.tight_layout()
 plt.show()
 
+# Plot confusion table normalized by label to see how labels are broken into clusters
 confusion_label_norm = confusion_table.div(confusion_table.sum(axis=0), axis=1)
 
 plt.figure(figsize=(14, 6))

@@ -58,6 +58,8 @@ class KNNClassifier:
         # Take k nearest
         neighbors = distances[:self.k]
 
+        # Option for weight consideration 
+        # The closer the neighbour is to the point the more it impacts classification
         if not self.weighted:
             # Majority vote (unweighted)
             votes = {}

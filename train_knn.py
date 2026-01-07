@@ -1,6 +1,4 @@
 from knn import KNNClassifier
-import os
-import glob
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -11,10 +9,11 @@ from matplotlib import pyplot as plt
 df = pd.read_csv("C:/Users/andyd/Downloads/combined_landmarks_clean.csv")
 
 # Prepare features and labels
-X = df.drop(columns=["image_name", "label"]).values
-y = df["label"].values
+X = df.drop(columns=["image_name", "label"]).values # Landmark feature data
+y = df["label"].values # Labels
 
 # Split dataset into training (80%) and test (20%) sets
+# N.B a 70:15:15 split was used for tuning hyperparameters
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -28,63 +27,63 @@ print("Test set:", X_test.shape, y_test.shape)
 
 # Train KNN classifier on training set and evaluate on test set
 # ----------------------------------
-# knn = KNNClassifier(k=3, distance="euclidean", weighted=True)
-# knn.fit(X_train, y_train)
+knn = KNNClassifier(k=3, distance="euclidean", weighted=True)
+knn.fit(X_train, y_train)
 
-# test_preds = knn.predict(X_test)
+test_preds = knn.predict(X_test)
 
-# print("Test accuracy:", accuracy_score(y_test, test_preds))
-# print(
-#     "Test sensitivity:",
-#     recall_score(y_test, test_preds, average="macro", zero_division=0)
-# )
+print("Test accuracy:", accuracy_score(y_test, test_preds))
+print(
+    "Test sensitivity:",
+    recall_score(y_test, test_preds, average="macro", zero_division=0)
+)
 # ----------------------------------
 
 # Plot confusion matrix
 # ----------------------------------
-# class_names = np.unique(y_train)
+class_names = np.unique(y_train)
 
-# cm_test = confusion_matrix(
-#     y_test,
-#     test_preds,
-#     labels=class_names
-# )
+cm_test = confusion_matrix(
+    y_test,
+    test_preds,
+    labels=class_names
+)
 
-# cm_norm = cm_test.astype(float) / cm_test.sum(axis=1, keepdims=True)
+cm_norm = cm_test.astype(float) / cm_test.sum(axis=1, keepdims=True)
 
-# def plot_confusion_matrix(cm, labels, title="Confusion Matrix"):
-#     plt.figure(figsize=(8, 6))
-#     plt.imshow(cm)
-#     plt.title(title)
-#     plt.colorbar()
+def plot_confusion_matrix(cm, labels, title="Confusion Matrix"):
+    plt.figure(figsize=(8, 6))
+    plt.imshow(cm)
+    plt.title(title)
+    plt.colorbar()
 
-#     tick_marks = np.arange(len(labels))
-#     plt.xticks(tick_marks, labels, rotation=45)
-#     plt.yticks(tick_marks, labels)
+    tick_marks = np.arange(len(labels))
+    plt.xticks(tick_marks, labels, rotation=45)
+    plt.yticks(tick_marks, labels)
 
-#     plt.xlabel("Predicted label")
-#     plt.ylabel("True label")
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
 
-#     # Add text annotations
-#     for i in range(len(labels)):
-#         for j in range(len(labels)):
-#             value = cm[i, j]
-#             plt.text(
-#                 j, i,
-#                 f"{value:.2f}",
-#                 ha="center",
-#                 va="center",
-#                 color="white" if value > 0.5 else "black"
-#             )
+    # Add text annotations
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            value = cm[i, j]
+            plt.text(
+                j, i,
+                f"{value:.2f}",
+                ha="center",
+                va="center",
+                color="white" if value > 0.5 else "black"
+            )
 
-#     plt.tight_layout()
-#     plt.show()
+    plt.tight_layout()
+    plt.show()
 
-# plot_confusion_matrix(
-#     cm_norm,
-#     class_names,
-#     title="Normalized Confusion Matrix (Test Set)"
-# )
+plot_confusion_matrix(
+    cm_norm,
+    class_names,
+    title="Normalized Confusion Matrix (Test Set)"
+)
 # ----------------------------------
 
 # 5-FOLD Cross-validation function to compare different k and weighted options
@@ -124,6 +123,7 @@ def cv_score(X, y, k, weighted):
 
 results = []
 
+# Run cross validation for K values 3...15 and weighted vs unweighted
 for k in [3, 5, 7, 9, 11, 15]:
     for weighted in [False, True]:
         metrics = cv_score(X_train, y_train, k, weighted)
@@ -135,7 +135,7 @@ for k in [3, 5, 7, 9, 11, 15]:
             f"sensitivity={metrics['sensitivity']:.3f}"
         )
 
-# Plot cross-validation results
+# Plot cross-validation results for accuracy
 k_values = [3, 5, 7, 9, 11, 15]
 uniform_accuracies = []
 weighted_accuracies = []
@@ -156,6 +156,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
+# Plot cross-validation results for sensitivity
 uniform_senstivities = []
 weighted_sensitivies = []
 
@@ -175,6 +176,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
+# Find and retrain on the best hyperparameters
 best = max(
     results,
     key=lambda x: 0.6 * x[2]["accuracy"] + 0.4 * x[2]["sensitivity"]
