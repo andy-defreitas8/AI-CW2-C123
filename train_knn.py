@@ -32,11 +32,10 @@ knn.fit(X_train, y_train)
 
 test_preds = knn.predict(X_test)
 
-print("Test accuracy:", accuracy_score(y_test, test_preds))
-print(
-    "Test sensitivity:",
-    recall_score(y_test, test_preds, average="macro", zero_division=0)
-)
+acc_test = accuracy_score(y_test, test_preds)
+sens_test = recall_score(y_test, test_preds, average="macro", zero_division=0)
+print(f"Test accuracy: {acc_test:.4f}")
+print(f"Test sensitivity: {sens_test:.4f}")
 # ----------------------------------
 
 # Plot confusion matrix
@@ -51,10 +50,13 @@ cm_test = confusion_matrix(
 
 cm_norm = cm_test.astype(float) / cm_test.sum(axis=1, keepdims=True)
 
-def plot_confusion_matrix(cm, labels, title="Confusion Matrix"):
+def plot_confusion_matrix(cm, labels, title="Confusion Matrix", accuracy=None, sensitivity=None):
     plt.figure(figsize=(8, 6))
     plt.imshow(cm)
-    plt.title(title)
+    if accuracy is not None and sensitivity is not None:
+        plt.title(f"{title}\nAccuracy: {accuracy:.3f}   Sensitivity: {sensitivity:.3f}")
+    else:
+        plt.title(title)
     plt.colorbar()
 
     tick_marks = np.arange(len(labels))
@@ -82,7 +84,9 @@ def plot_confusion_matrix(cm, labels, title="Confusion Matrix"):
 plot_confusion_matrix(
     cm_norm,
     class_names,
-    title="Normalized Confusion Matrix (Test Set)"
+    title="KNN Normalized Confusion Matrix",
+    accuracy=acc_test,
+    sensitivity=sens_test
 )
 # ----------------------------------
 
