@@ -6,7 +6,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, recall_score, confusion_matrix
 from matplotlib import pyplot as plt
 
-df = pd.read_csv("C:/Users/andyd/Downloads/combined_landmarks_clean.csv")
+filepath = "combined_landmarks_clean.csv"
+df = pd.read_csv(filepath)
 
 # Prepare features and labels
 X = df.drop(columns=["image_name", "label"]).values # Landmark feature data
